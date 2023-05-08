@@ -6,17 +6,7 @@ import colors from "colors";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
 import cors from "cors";
 
-import userRoutes from "./routes/userRoutes.js";
-import contactRoutes from "./routes/contactRoutes.js";
-import payrollRoutes from "./routes/payrollRoutes.js";
-import accountRoutes from "./routes/accountRoutes.js";
-import settledPayrollRoutes from "./routes/settledPayrollRoutes.js";
-import incomeRoutes from "./routes/incomeRoutes.js";
-import expenseRoutes from "./routes/expenseRoute.js";
-import requestRoutes from "./routes/requestRoute.js";
-import calculationRoutes from "./routes/calculationRoutes.js";
-import chatbotRoutes from "./routes/chatbotRoutes.js";
-import webHookRoutes from "./routes/webHookRoutes.js";
+import webhooksRoutes from "./routes/webhooksRoutes.js";
 dotenv.config(); // config .env
 connectDB(); // connect to database
 
@@ -29,17 +19,8 @@ app.use(cors());
 app.use(express.static("uploads")); // to be able to fetch from uploads(images) to frontend
 
 //routes
-app.use("/api/users", userRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/payroll", payrollRoutes);
-app.use("/api/account", accountRoutes);
-app.use("/api/settled", settledPayrollRoutes);
-app.use("/api/income", incomeRoutes);
-app.use("/api/expense", expenseRoutes);
-app.use("/api/request", requestRoutes);
-app.use("/api/calc", calculationRoutes);
-app.use("/api/chatbot", chatbotRoutes);
-app.use("/api/webhook", webHookRoutes);
+
+app.use("/api/", webhooksRoutes);
 app.use(notFound); // If page not found
 app.use(errorHandler); // To override the default error handling that return html with message we use this errorHandler.
 
