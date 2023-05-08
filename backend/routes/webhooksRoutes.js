@@ -4,11 +4,34 @@ import {
   getTotalExpensesByYear,
   getTotalPayrollsByYear,
   getTotalNetProfitByYear,
+  getIncomesByMonth,
+  getIncomesByMonthNum,
+  getExpensesByMonth,
+  getExpensesByMonthNum,
+  getPayrollsByMonth,
+  getPayrollsByMonthNum,
+  getNetProfitByMonth,
+  getNetProfitByMonthNum,
+  getTotalIncomesByDate,
+  getTotalExpensesByDate,
+  getTotalPayrollsByDate,
+  getTotalNetProfitByDate,
 } from "../controllers/webhookController.js";
 const router = express.Router();
+const getOrdinal = (n) => {
+  const suffixes = {
+    1: "st",
+    2: "nd",
+    3: "rd",
+  };
 
+  const suffix = suffixes[n % 10] || "th";
+  return n + suffix;
+};
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
+  console.log(req.body.queryResult.parameters);
+
   if (intentName === "GetTotalIncomesByYear") {
     let year = req.body.queryResult.parameters.year;
     if (year.toLowerCase().includes("last")) {
@@ -21,7 +44,7 @@ router.post("/webhook", async (req, res) => {
     const totalIncomes = await getTotalIncomesByYear(year);
 
     const response = {
-      fulfillmentText: `The total incomes for year ${year} is ${totalIncomes}.`,
+      fulfillmentText: `The total incomes for year ${year} is ${totalIncomes}$.`,
     };
 
     res.json(response);
@@ -37,7 +60,7 @@ router.post("/webhook", async (req, res) => {
     const totalExpenses = await getTotalExpensesByYear(year);
 
     const response = {
-      fulfillmentText: `The total expenses for year ${year} is ${totalExpenses}.`,
+      fulfillmentText: `The total expenses for year ${year} is ${totalExpenses}$.`,
     };
 
     res.json(response);
@@ -51,14 +74,12 @@ router.post("/webhook", async (req, res) => {
       year = date;
     }
     const totalPayrolls = await getTotalPayrollsByYear(year);
-
     const response = {
-      fulfillmentText: `The total payrolls for year ${year} is ${totalPayrolls}.`,
+      fulfillmentText: `The total payrolls for year ${year} is ${totalPayrolls}$.`,
     };
-
     res.json(response);
   } else if (intentName === "GetTotalNetProfitByYear") {
-    const year = req.body.queryResult.parameters.year;
+    let year = req.body.queryResult.parameters.year;
     if (year.toLowerCase().includes("last")) {
       let date = new Date().getUTCFullYear() - 1;
       year = date;
@@ -67,12 +88,320 @@ router.post("/webhook", async (req, res) => {
       year = date;
     }
     const totalNetProfit = await getTotalNetProfitByYear(year);
-
     const response = {
-      fulfillmentText: `The total net profit for year ${year} is ${totalNetProfit}.`,
+      fulfillmentText: `The total net profit for year ${year} is ${totalNetProfit}$.`,
     };
 
     res.json(response);
+  } else if (intentName === "GetTotalIncomesByMonth") {
+    if (req.body.queryResult.parameters["date-period"]) {
+      const start = req.body.queryResult.parameters[
+        "date-period"
+      ].startDate.substring(0, 10);
+      const end = req.body.queryResult.parameters[
+        "date-period"
+      ].endDate.substring(0, 10);
+      const totalIncomes = await getIncomesByMonth(start, end);
+      const date = new Date(start);
+      const monthName = date.toLocaleString("default", { month: "long" });
+      const response = {
+        fulfillmentText: `The total incomes for  ${monthName} is ${totalIncomes}$.`,
+      };
+      res.json(response);
+    } else if (req.body.queryResult.parameters.month) {
+      if (req.body.queryResult.parameters.year) {
+        var year = req.body.queryResult.parameters.year;
+      } else {
+        var year = new Date().getUTCFullYear();
+      }
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+
+      const totalIncomes = await getIncomesByMonthNum(year, month);
+      const response = {
+        fulfillmentText: `The total incomes for  ${monthName}  ${year}  is ${totalIncomes}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
+  } else if (intentName === "GetTotalExpensesByMonth") {
+    if (req.body.queryResult.parameters["date-period"]) {
+      const start = req.body.queryResult.parameters[
+        "date-period"
+      ].startDate.substring(0, 10);
+      const end = req.body.queryResult.parameters[
+        "date-period"
+      ].endDate.substring(0, 10);
+      const totalExpenses = await getExpensesByMonth(start, end);
+      const date = new Date(start);
+      const monthName = date.toLocaleString("default", { month: "long" });
+      const response = {
+        fulfillmentText: `The total expenses for  ${monthName} is ${totalExpenses}$.`,
+      };
+      res.json(response);
+    } else if (req.body.queryResult.parameters.month) {
+      if (req.body.queryResult.parameters.year) {
+        var year = req.body.queryResult.parameters.year;
+      } else {
+        var year = new Date().getUTCFullYear();
+      }
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+
+      const totalExpenses = await getExpensesByMonthNum(year, month);
+      const response = {
+        fulfillmentText: `The total expenses for  ${monthName}  ${year}  is ${totalExpenses}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
+  } else if (intentName === "GetTotalPayrollsByMonth") {
+    if (req.body.queryResult.parameters["date-period"]) {
+      const start = req.body.queryResult.parameters[
+        "date-period"
+      ].startDate.substring(0, 10);
+      const end = req.body.queryResult.parameters[
+        "date-period"
+      ].endDate.substring(0, 10);
+      const totalPayrolls = await getPayrollsByMonth(start, end);
+      const date = new Date(start);
+      const monthName = date.toLocaleString("default", { month: "long" });
+      const response = {
+        fulfillmentText: `The total payrolls for  ${monthName} is ${totalPayrolls}$.`,
+      };
+      res.json(response);
+    } else if (req.body.queryResult.parameters.month) {
+      if (req.body.queryResult.parameters.year) {
+        var year = req.body.queryResult.parameters.year;
+      } else {
+        var year = new Date().getUTCFullYear();
+      }
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+
+      const totalPayrolls = await getPayrollsByMonthNum(year, month);
+      const response = {
+        fulfillmentText: `The total payrolls for  ${monthName}  ${year}  is ${totalPayrolls}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
+  } else if (intentName === "GetTotalNetProfitByMonth") {
+    if (req.body.queryResult.parameters["date-period"]) {
+      const start = req.body.queryResult.parameters[
+        "date-period"
+      ].startDate.substring(0, 10);
+      const end = req.body.queryResult.parameters[
+        "date-period"
+      ].endDate.substring(0, 10);
+      const netProfit = await getNetProfitByMonth(start, end);
+      const date = new Date(start);
+      const monthName = date.toLocaleString("default", { month: "long" });
+      const response = {
+        fulfillmentText: `The Net Profit for  ${monthName} is ${netProfit}$.`,
+      };
+      res.json(response);
+    } else if (req.body.queryResult.parameters.month) {
+      if (req.body.queryResult.parameters.year) {
+        var year = req.body.queryResult.parameters.year;
+      } else {
+        var year = new Date().getUTCFullYear();
+      }
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+
+      const netProfit = await getNetProfitByMonthNum(year, month);
+      const response = {
+        fulfillmentText: `The Net Profit for  ${monthName}  ${year}  is ${netProfit}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
+  } else if (intentName === "GetTotalIncomesByDate") {
+    if (req.body.queryResult.parameters.date) {
+      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
+      const date = new Date(dateStr);
+
+      const incomes = await getTotalIncomesByDate(date);
+      const response = {
+        fulfillmentText: `The incomes for ${dateStr} is ${incomes}$.`,
+      };
+      res.json(response);
+    } else if (
+      req.body.queryResult.parameters.month &&
+      req.body.queryResult.parameters.ordinal
+    ) {
+      var year =
+        req.body.queryResult.parameters.year || new Date().getUTCFullYear();
+
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+      const ordinal = req.body.queryResult.parameters.ordinal;
+      const dateStr = `${year}-${month}-${ordinal}`;
+      const date = new Date(dateStr);
+      const incomes = await getTotalIncomesByDate(date);
+      const response = {
+        fulfillmentText: `The incomes for  ${monthName}  ${getOrdinal(
+          ordinal
+        )} , ${year}  is ${incomes}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
+  } else if (intentName === "GetTotalExpensesByDate") {
+    if (req.body.queryResult.parameters.date) {
+      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
+      const date = new Date(dateStr);
+
+      const expenses = await getTotalExpensesByDate(date);
+      const response = {
+        fulfillmentText: `The expenses for ${dateStr} is ${expenses}$.`,
+      };
+      res.json(response);
+    } else if (
+      req.body.queryResult.parameters.month &&
+      req.body.queryResult.parameters.ordinal
+    ) {
+      var year =
+        req.body.queryResult.parameters.year || new Date().getUTCFullYear();
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+      const ordinal = req.body.queryResult.parameters.ordinal;
+      const dateStr = `${year}-${month}-${ordinal}`;
+      const date = new Date(dateStr);
+      const expenses = await getTotalExpensesByDate(date);
+      const response = {
+        fulfillmentText: `The expenses for  ${monthName}  ${getOrdinal(
+          ordinal
+        )} , ${year}  is ${expenses}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
+  } else if (intentName === "GetTotalPayrollsByDate") {
+    if (req.body.queryResult.parameters.date) {
+      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
+      const date = new Date(dateStr);
+
+      const payrolls = await getTotalPayrollsByDate(date);
+      const response = {
+        fulfillmentText: `The payrolls for ${dateStr} is ${payrolls}$.`,
+      };
+      res.json(response);
+    } else if (
+      req.body.queryResult.parameters.month &&
+      req.body.queryResult.parameters.ordinal
+    ) {
+      var year =
+        req.body.queryResult.parameters.year || new Date().getUTCFullYear();
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+      const ordinal = req.body.queryResult.parameters.ordinal;
+      const dateStr = `${year}-${month}-${ordinal}`;
+      const date = new Date(dateStr);
+      const payrolls = await getTotalPayrollsByDate(date);
+      const response = {
+        fulfillmentText: `The payrolls for  ${monthName}  ${getOrdinal(
+          ordinal
+        )} , ${year}  is ${payrolls}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
+  } else if (intentName === "GetTotalNetProfitByDate") {
+    if (req.body.queryResult.parameters.date) {
+      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
+      const date = new Date(dateStr);
+
+      const netProfit = await getTotalNetProfitByDate(date);
+      const response = {
+        fulfillmentText: `The net profit for ${dateStr} is ${netProfit}$.`,
+      };
+      res.json(response);
+    } else if (
+      req.body.queryResult.parameters.month &&
+      req.body.queryResult.parameters.ordinal
+    ) {
+      var year =
+        req.body.queryResult.parameters.year || new Date().getUTCFullYear();
+      const monthName = req.body.queryResult.parameters.month;
+      const monthNumber =
+        new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
+      const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
+      const ordinal = req.body.queryResult.parameters.ordinal;
+      const dateStr = `${year}-${month}-${ordinal}`;
+      const date = new Date(dateStr);
+      const netProfit = await getTotalNetProfitByDate(date);
+      const response = {
+        fulfillmentText: `The net profit for  ${monthName}  ${getOrdinal(
+          ordinal
+        )} , ${year}  is ${netProfit}$.`,
+      };
+      res.json(response);
+    } else {
+      const response = {
+        fulfillmentText:
+          "Sorry, I don't understand.Please add date,month or year",
+      };
+
+      res.json(response);
+    }
   } else {
     // Handle unknown intents
     const response = {
@@ -83,3 +412,11 @@ router.post("/webhook", async (req, res) => {
   }
 });
 export default router;
+
+//monthly (next month previous)
+
+//date (tomorrow yesterday)
+
+//avg monthly (incomes,expenses,payrolls,netProfit)
+
+//
