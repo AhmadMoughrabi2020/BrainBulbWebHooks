@@ -9,9 +9,15 @@ const router = express.Router();
 
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
-
   if (intentName === "GetTotalIncomesByYear") {
-    const year = req.body.queryResult.parameters.year;
+    let year = req.body.queryResult.parameters.year;
+    if (year.toLowerCase().includes("last")) {
+      let date = new Date().getUTCFullYear() - 1;
+      year = date;
+    } else if (year.toLowerCase().includes("next")) {
+      let date = new Date().getUTCFullYear() + 1;
+      year = date;
+    }
     const totalIncomes = await getTotalIncomesByYear(year);
 
     const response = {
@@ -20,7 +26,14 @@ router.post("/webhook", async (req, res) => {
 
     res.json(response);
   } else if (intentName === "GetTotalExpensesByYear") {
-    const year = req.body.queryResult.parameters.year;
+    let year = req.body.queryResult.parameters.year;
+    if (year.toLowerCase().includes("last")) {
+      let date = new Date().getUTCFullYear() - 1;
+      year = date;
+    } else if (year.toLowerCase().includes("next")) {
+      let date = new Date().getUTCFullYear() + 1;
+      year = date;
+    }
     const totalExpenses = await getTotalExpensesByYear(year);
 
     const response = {
@@ -29,7 +42,14 @@ router.post("/webhook", async (req, res) => {
 
     res.json(response);
   } else if (intentName === "GetTotalPayrollsByYear") {
-    const year = req.body.queryResult.parameters.year;
+    let year = req.body.queryResult.parameters.year;
+    if (year.toLowerCase().includes("last")) {
+      let date = new Date().getUTCFullYear() - 1;
+      year = date;
+    } else if (year.toLowerCase().includes("next")) {
+      let date = new Date().getUTCFullYear() + 1;
+      year = date;
+    }
     const totalPayrolls = await getTotalPayrollsByYear(year);
 
     const response = {
@@ -39,6 +59,13 @@ router.post("/webhook", async (req, res) => {
     res.json(response);
   } else if (intentName === "GetTotalNetProfitByYear") {
     const year = req.body.queryResult.parameters.year;
+    if (year.toLowerCase().includes("last")) {
+      let date = new Date().getUTCFullYear() - 1;
+      year = date;
+    } else if (year.toLowerCase().includes("next")) {
+      let date = new Date().getUTCFullYear() + 1;
+      year = date;
+    }
     const totalNetProfit = await getTotalNetProfitByYear(year);
 
     const response = {
