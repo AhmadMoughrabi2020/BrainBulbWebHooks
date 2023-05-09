@@ -24,14 +24,15 @@ const getOrdinal = (n) => {
     2: "nd",
     3: "rd",
   };
-
+  if (n >= 11 && n <= 13) {
+    return n + "th";
+  }
   const suffix = suffixes[n % 10] || "th";
   return n + suffix;
 };
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
   console.log(req.body.queryResult.parameters);
-
   if (intentName === "GetTotalIncomesByYear") {
     let year = req.body.queryResult.parameters.year;
     if (year.toLowerCase().includes("last")) {
@@ -251,12 +252,21 @@ router.post("/webhook", async (req, res) => {
     }
   } else if (intentName === "GetTotalIncomesByDate") {
     if (req.body.queryResult.parameters.date) {
-      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
-      const date = new Date(dateStr);
-
+      const dateStr = req.body.queryResult.parameters.date;
+      // .substring(0, 10);
+      const originalDate = new Date(dateStr);
+      const year = originalDate.getFullYear();
+      const month = originalDate.getMonth() + 1;
+      const day = originalDate.getDate();
+      const monthStr = month.toString().padStart(2, "0");
+      const dayStr = day.toString().padStart(2, "0");
+      const dateStr2 = `${year}-${monthStr}-${dayStr}`;
+      const date = new Date(dateStr2);
       const incomes = await getTotalIncomesByDate(date);
       const response = {
-        fulfillmentText: `The incomes for ${dateStr} is ${incomes}$.`,
+        fulfillmentText: `The incomes for ${dateStr2} is ${incomes}${
+          incomes > 0 || incomes < 0 ? "$" : ""
+        }.`,
       };
       res.json(response);
     } else if (
@@ -270,14 +280,17 @@ router.post("/webhook", async (req, res) => {
       const monthNumber =
         new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
       const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
-      const ordinal = req.body.queryResult.parameters.ordinal;
+      const ordinal =
+        req.body.queryResult.parameters.ordinal < 10
+          ? "0" + req.body.queryResult.parameters.ordinal
+          : req.body.queryResult.parameters.ordinal;
       const dateStr = `${year}-${month}-${ordinal}`;
       const date = new Date(dateStr);
       const incomes = await getTotalIncomesByDate(date);
       const response = {
         fulfillmentText: `The incomes for  ${monthName}  ${getOrdinal(
-          ordinal
-        )} , ${year}  is ${incomes}$.`,
+          parseInt(ordinal)
+        )} , ${year}  is ${incomes}${incomes > 0 || incomes < 0 ? "$" : ""}.`,
       };
       res.json(response);
     } else {
@@ -290,12 +303,21 @@ router.post("/webhook", async (req, res) => {
     }
   } else if (intentName === "GetTotalExpensesByDate") {
     if (req.body.queryResult.parameters.date) {
-      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
-      const date = new Date(dateStr);
-
+      const dateStr = req.body.queryResult.parameters.date;
+      // .substring(0, 10);
+      const originalDate = new Date(dateStr);
+      const year = originalDate.getFullYear();
+      const month = originalDate.getMonth() + 1;
+      const day = originalDate.getDate();
+      const monthStr = month.toString().padStart(2, "0");
+      const dayStr = day.toString().padStart(2, "0");
+      const dateStr2 = `${year}-${monthStr}-${dayStr}`;
+      const date = new Date(dateStr2);
       const expenses = await getTotalExpensesByDate(date);
       const response = {
-        fulfillmentText: `The expenses for ${dateStr} is ${expenses}$.`,
+        fulfillmentText: `The expenses for ${dateStr2} is ${expenses}${
+          expenses > 0 || expenses < 0 ? "$" : ""
+        }.`,
       };
       res.json(response);
     } else if (
@@ -308,14 +330,19 @@ router.post("/webhook", async (req, res) => {
       const monthNumber =
         new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
       const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
-      const ordinal = req.body.queryResult.parameters.ordinal;
+      const ordinal =
+        req.body.queryResult.parameters.ordinal < 10
+          ? "0" + req.body.queryResult.parameters.ordinal
+          : req.body.queryResult.parameters.ordinal;
       const dateStr = `${year}-${month}-${ordinal}`;
       const date = new Date(dateStr);
       const expenses = await getTotalExpensesByDate(date);
       const response = {
         fulfillmentText: `The expenses for  ${monthName}  ${getOrdinal(
-          ordinal
-        )} , ${year}  is ${expenses}$.`,
+          parseInt(ordinal)
+        )} , ${year}  is ${expenses}${
+          expenses > 0 || expenses < 0 ? "$" : ""
+        }.`,
       };
       res.json(response);
     } else {
@@ -328,12 +355,21 @@ router.post("/webhook", async (req, res) => {
     }
   } else if (intentName === "GetTotalPayrollsByDate") {
     if (req.body.queryResult.parameters.date) {
-      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
-      const date = new Date(dateStr);
-
+      const dateStr = req.body.queryResult.parameters.date;
+      // .substring(0, 10);
+      const originalDate = new Date(dateStr);
+      const year = originalDate.getFullYear();
+      const month = originalDate.getMonth() + 1;
+      const day = originalDate.getDate();
+      const monthStr = month.toString().padStart(2, "0");
+      const dayStr = day.toString().padStart(2, "0");
+      const dateStr2 = `${year}-${monthStr}-${dayStr}`;
+      const date = new Date(dateStr2);
       const payrolls = await getTotalPayrollsByDate(date);
       const response = {
-        fulfillmentText: `The payrolls for ${dateStr} is ${payrolls}$.`,
+        fulfillmentText: `The payrolls for ${dateStr2} is ${payrolls}${
+          payrolls > 0 || payrolls < 0 ? "$" : ""
+        }.`,
       };
       res.json(response);
     } else if (
@@ -346,14 +382,19 @@ router.post("/webhook", async (req, res) => {
       const monthNumber =
         new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
       const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
-      const ordinal = req.body.queryResult.parameters.ordinal;
+      const ordinal =
+        req.body.queryResult.parameters.ordinal < 10
+          ? "0" + req.body.queryResult.parameters.ordinal
+          : req.body.queryResult.parameters.ordinal;
       const dateStr = `${year}-${month}-${ordinal}`;
       const date = new Date(dateStr);
       const payrolls = await getTotalPayrollsByDate(date);
       const response = {
         fulfillmentText: `The payrolls for  ${monthName}  ${getOrdinal(
-          ordinal
-        )} , ${year}  is ${payrolls}$.`,
+          parseInt(ordinal)
+        )} , ${year}  is ${payrolls}${
+          payrolls > 0 || payrolls < 0 ? "$" : ""
+        }.`,
       };
       res.json(response);
     } else {
@@ -366,12 +407,23 @@ router.post("/webhook", async (req, res) => {
     }
   } else if (intentName === "GetTotalNetProfitByDate") {
     if (req.body.queryResult.parameters.date) {
-      const dateStr = req.body.queryResult.parameters.date.substring(0, 10);
-      const date = new Date(dateStr);
+      const dateStr = req.body.queryResult.parameters.date;
+      // .substring(0, 10);
+      const originalDate = new Date(dateStr);
+      const year = originalDate.getFullYear();
+      const month = originalDate.getMonth() + 1;
+      const day = originalDate.getDate();
+      const monthStr = month.toString().padStart(2, "0");
+      const dayStr = day.toString().padStart(2, "0");
+      const dateStr2 = `${year}-${monthStr}-${dayStr}`;
+      const date = new Date(dateStr2);
+      console.log(date);
 
       const netProfit = await getTotalNetProfitByDate(date);
       const response = {
-        fulfillmentText: `The net profit for ${dateStr} is ${netProfit}$.`,
+        fulfillmentText: `The net profit for ${dateStr2} is ${netProfit}${
+          netProfit > 0 || netProfit < 0 ? "$" : ""
+        }.`,
       };
       res.json(response);
     } else if (
@@ -384,14 +436,20 @@ router.post("/webhook", async (req, res) => {
       const monthNumber =
         new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
       const month = monthNumber < 10 ? "0" + monthNumber : monthNumber;
-      const ordinal = req.body.queryResult.parameters.ordinal;
+      const ordinal =
+        req.body.queryResult.parameters.ordinal < 10
+          ? "0" + req.body.queryResult.parameters.ordinal
+          : req.body.queryResult.parameters.ordinal;
       const dateStr = `${year}-${month}-${ordinal}`;
       const date = new Date(dateStr);
+      console.log(date);
       const netProfit = await getTotalNetProfitByDate(date);
       const response = {
         fulfillmentText: `The net profit for  ${monthName}  ${getOrdinal(
-          ordinal
-        )} , ${year}  is ${netProfit}$.`,
+          parseInt(ordinal)
+        )} , ${year}  is ${netProfit}${
+          netProfit > 0 || netProfit < 0 ? "$" : ""
+        }.`,
       };
       res.json(response);
     } else {
